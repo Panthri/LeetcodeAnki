@@ -5,6 +5,7 @@ struct HomeView: View {
     @EnvironmentObject var cardStore: CardStore
     var onStartReview: () -> Void
 
+    @State private var showAddCard = false
     private let columns = [GridItem(.flexible()), GridItem(.flexible())]
 
     var body: some View {
@@ -89,10 +90,19 @@ struct HomeView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: SettingsView()) {
-                        Image(systemName: "gearshape")
+                    HStack(spacing: 16) {
+                        Button(action: { showAddCard = true }) {
+                            Image(systemName: "plus")
+                        }
+                        NavigationLink(destination: SettingsView()) {
+                            Image(systemName: "gearshape")
+                        }
                     }
                 }
+            }
+            .sheet(isPresented: $showAddCard) {
+                AddCardView()
+                    .environmentObject(cardStore)
             }
             .background(Color(.systemGroupedBackground))
         }

@@ -2,8 +2,6 @@ import Foundation
 import Combine
 
 // MARK: - CardStore
-/// The central data store for all flashcards. Loads seed data and
-/// persists SM-2 progress to UserDefaults.
 final class CardStore: ObservableObject {
 
     // MARK: - Published State
@@ -15,6 +13,7 @@ final class CardStore: ObservableObject {
     private let progressKey    = "com.panthri.leetcodeanki.progress"
     private let streakKey      = "com.panthri.leetcodeanki.streak"
     private let lastStudiedKey = "com.panthri.leetcodeanki.lastStudied"
+    private let customCardsKey = "com.panthri.leetcodeanki.customCards"
 
     // MARK: - Init
     init() {
@@ -24,42 +23,38 @@ final class CardStore: ObservableObject {
 
     // MARK: - Computed Properties
 
-    /// Cards whose next review date is today or earlier.
     var dueCards: [Card] {
         allCards.filter { $0.isDue }
     }
 
-    /// Cards that have been reviewed at least once and are not yet mastered.
     var learningCards: [Card] {
         allCards.filter { !$0.isNew && !$0.isMastered }
     }
 
-    /// Cards considered mastered (≥5 successful repetitions, good ease factor).
     var masteredCards: [Card] {
         allCards.filter { $0.isMastered }
     }
 
-    /// Unseen cards.
     var newCards: [Card] {
         allCards.filter { $0.isNew }
     }
 
-    /// Due count grouped by category.
+    var customCards: [Card] {
+        allCards.filter { $0.isCustom }
+    }
+
     func dueCount(for category: Category) -> Int {
         allCards.filter { $0.category == category && $0.isDue }.count
     }
 
-    /// All cards for a given category.
     func cards(for category: Category) -> [Card] {
         allCards.filter { $0.category == category }
     }
 
-    /// Cards due within the next N days (used for calendar view).
     func cardsDue(inNext days: Int) -> [Date: Int] {
         var result: [Date: Int] = [:]
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-
         for card in allCards {
             let reviewDay = calendar.startOfDay(for: card.nextReviewDate)
             if let diff = calendar.dateComponents([.day], from: today, to: reviewDay).day,
@@ -72,23 +67,52 @@ final class CardStore: ObservableObject {
 
     // MARK: - Rating
 
-    /// Apply an SM-2 rating to a card and persist.
     func rate(card: Card, rating: Rating) {
         let updated = SM2Algorithm.calculateNextReview(card: card, rating: rating)
         if let idx = allCards.firstIndex(where: { $0.id == card.id }) {
             allCards[idx] = updated
         }
         saveProgress()
+        saveCustomCards()
         updateStreak()
+    }
+
+    // MARK: - Custom Card CRUD
+
+    func addCard(_ card: Card) {
+        var newCard = card
+        newCard.isCustom = true
+        allCards.append(newCard)
+        saveCustomCards()
+        saveProgress()
+    }
+
+    func updateCard(_ card: Card) {
+        guard card.isCustom, let idx = allCards.firstIndex(where: { $0.id == card.id }) else { return }
+        allCards[idx] = card
+        saveCustomCards()
+        saveProgress()
+    }
+
+    func deleteCard(_ card: Card) {
+        guard card.isCustom else { return }
+        allCards.removeAll { $0.id == card.id }
+        saveCustomCards()
+        saveProgress()
     }
 
     // MARK: - Persistence
 
     private func loadCards() {
-        // Start with seed data
         var cards = SeedCards.all
 
-        // Load any saved progress and overlay it
+        // Load custom cards
+        if let data = UserDefaults.standard.data(forKey: customCardsKey),
+           let custom = try? JSONDecoder().decode([Card].self, from: data) {
+            cards.append(contentsOf: custom)
+        }
+
+        // Overlay saved progress
         if let data = UserDefaults.standard.data(forKey: progressKey),
            let savedProgress = try? JSONDecoder().decode([UUID: CardProgress].self, from: data) {
             cards = cards.map { card in
@@ -106,6 +130,13 @@ final class CardStore: ObservableObject {
         }
 
         allCards = cards
+    }
+
+    private func saveCustomCards() {
+        let custom = allCards.filter { $0.isCustom }
+        if let data = try? JSONEncoder().encode(custom) {
+            UserDefaults.standard.set(data, forKey: customCardsKey)
+        }
     }
 
     private func saveProgress() {
@@ -128,40 +159,35 @@ final class CardStore: ObservableObject {
     private func updateStreak() {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
-
         if let last = lastStudiedDate {
             let lastDay = calendar.startOfDay(for: last)
             if calendar.isDate(lastDay, inSameDayAs: today) {
-                // Same day — no change
                 return
             } else if let diff = calendar.dateComponents([.day], from: lastDay, to: today).day, diff == 1 {
-                // Consecutive day
                 streak += 1
             } else {
-                // Streak broken
                 streak = 1
             }
         } else {
             streak = 1
         }
-
         lastStudiedDate = Date()
         UserDefaults.standard.set(streak, forKey: streakKey)
         UserDefaults.standard.set(lastStudiedDate, forKey: lastStudiedKey)
     }
 
-    /// Reset all progress back to seed defaults (useful for testing).
     func resetProgress() {
         UserDefaults.standard.removeObject(forKey: progressKey)
         UserDefaults.standard.removeObject(forKey: streakKey)
         UserDefaults.standard.removeObject(forKey: lastStudiedKey)
+        UserDefaults.standard.removeObject(forKey: customCardsKey)
         allCards = SeedCards.all
         streak = 0
         lastStudiedDate = nil
     }
 }
 
-// MARK: - CardProgress (lightweight Codable snapshot for UserDefaults)
+// MARK: - CardProgress
 private struct CardProgress: Codable {
     let interval: Int
     let repetitions: Int

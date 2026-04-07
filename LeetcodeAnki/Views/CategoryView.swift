@@ -7,6 +7,8 @@ struct CategoryView: View {
 
     @State private var selectedDifficulty: Difficulty? = nil
     @State private var sortOrder: SortOrder = .nextReview
+    @State private var showAddCard = false
+    @State private var editingCard: Card? = nil
 
     enum SortOrder: String, CaseIterable {
         case nextReview = "Next Review"
@@ -104,6 +106,21 @@ struct CategoryView: View {
                             CategoryCardRow(card: card)
                         }
                         .listRowBackground(Color(.secondarySystemGroupedBackground))
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            if card.isCustom {
+                                Button(role: .destructive) {
+                                    cardStore.deleteCard(card)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                                Button {
+                                    editingCard = card
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+                                .tint(.orange)
+                            }
+                        }
                     }
                 }
                 .listStyle(.insetGrouped)
@@ -112,6 +129,21 @@ struct CategoryView: View {
         .navigationTitle("\(category.emoji) \(category.rawValue)")
         .navigationBarTitleDisplayMode(.large)
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: { showAddCard = true }) {
+                    Image(systemName: "plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showAddCard) {
+            AddCardView(editingCard: nil)
+                .environmentObject(cardStore)
+        }
+        .sheet(item: $editingCard) { card in
+            AddCardView(editingCard: card)
+                .environmentObject(cardStore)
+        }
     }
 }
 

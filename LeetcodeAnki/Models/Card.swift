@@ -104,6 +104,7 @@ struct Card: Identifiable, Codable {
     let hint: String
     let solution: String
     let leetcodeURL: String
+    var isCustom: Bool
 
     // SM-2 spaced repetition fields
     var interval: Int       // days until next review
@@ -120,7 +121,8 @@ struct Card: Identifiable, Codable {
         problem: String,
         hint: String,
         solution: String,
-        leetcodeURL: String,
+        leetcodeURL: String = "",
+        isCustom: Bool = false,
         interval: Int = 0,
         repetitions: Int = 0,
         easeFactor: Double = 2.5,
@@ -135,6 +137,7 @@ struct Card: Identifiable, Codable {
         self.hint = hint
         self.solution = solution
         self.leetcodeURL = leetcodeURL
+        self.isCustom = isCustom
         self.interval = interval
         self.repetitions = repetitions
         self.easeFactor = easeFactor
