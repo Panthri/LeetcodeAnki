@@ -19,6 +19,7 @@
 		AA000001000000000000010A /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000010B /* ProgressView.swift */; };
 		AA000001000000000000011A /* StudyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000011B /* StudyViewModel.swift */; };
 		AA000001000000000000012A /* CategoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000012B /* CategoryView.swift */; };
+		AA000001000000000000014A /* AddCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000014B /* AddCardView.swift */; };
 		AA000001000000000000013A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA000001000000000000013B /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +36,7 @@
 		AA000001000000000000010B /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
 		AA000001000000000000011B /* StudyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudyViewModel.swift; sourceTree = "<group>"; };
 		AA000001000000000000012B /* CategoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryView.swift; sourceTree = "<group>"; };
+		AA000001000000000000014B /* AddCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCardView.swift; sourceTree = "<group>"; };
 		AA000001000000000000013B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Resources/Assets.xcassets; sourceTree = "<group>"; };
 		AA0000010000000000000020 /* LeetcodeAnki.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LeetcodeAnki.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -114,6 +116,7 @@
 				AA000001000000000000009B /* CardDetailView.swift */,
 				AA000001000000000000010B /* ProgressView.swift */,
 				AA000001000000000000012B /* CategoryView.swift */,
+				AA000001000000000000014B /* AddCardView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -215,6 +218,7 @@
 				AA000001000000000000010A /* ProgressView.swift in Sources */,
 				AA000001000000000000011A /* StudyViewModel.swift in Sources */,
 				AA000001000000000000012A /* CategoryView.swift in Sources */,
+				AA000001000000000000014A /* AddCardView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
